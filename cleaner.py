@@ -1,6 +1,7 @@
 import os
 import time
 import datetime
+import shutil
 import logging
 import sqlite3
 
@@ -19,7 +20,7 @@ class Cleaner:
         except Exception,e:
             logger.error(e)
         try:
-            os.rmdir(filename[:-4])
+            shutil.rmtree(filename[:-4])
         except Exception,e:
             logger.error(e)
     

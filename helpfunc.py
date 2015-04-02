@@ -1,7 +1,7 @@
 # -*- coding: cp936 -*-
-import datetime
 import os
 import urllib
+import datetime
 
 class MyError(Exception):
     def __init__(self, value):
@@ -42,7 +42,7 @@ class HelpFunc:
     def get_img_by_url(self,url,path,filename):
         try:
             local = os.path.join(path,filename)
-            filename,headers = urllib.urlretrieve(url.replace('\\','/'),local)
+            filename,headers = urllib.urlretrieve(url.replace('\\','/').encode('utf8'),local)
 
             if headers.getheader('Content-Type') != 'image/jpeg':
                 raise UrlError(url)

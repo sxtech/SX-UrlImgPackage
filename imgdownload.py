@@ -29,7 +29,7 @@ class Download:
 
         self.url_list = []
         #抓图线程数量
-        self.thread_num = 4
+        self.thread_num = 8
         #抓图线程标记
         self.img_flag = False  
         
@@ -39,8 +39,7 @@ class Download:
                 local = self.hf.get_img_by_url(self.url_list[j],self.path,'%s.jpg'%str(j))
                 self.url_que.put(local)
             except Exception as e:
-                logger.exception(e)
-                print e
+                logger.error('%s: %s'%(e,self.url_list[j]))
 
     def zip_thread(self):
         sq = {}

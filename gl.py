@@ -3,6 +3,8 @@
 #sqlitepool = None
 #oracle线程池
 #orcpool = None
+#mysql线程池
+MYSQLPOOL = None
 #服务侦听端口
 LISTEN_PORT = 21231     
 #设置字符集（和PHP交互的字符集）

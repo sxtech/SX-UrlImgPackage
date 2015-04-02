@@ -21,6 +21,7 @@ import urllib
 import urlparse
 import threading
 import Queue
+import MySQLdb
 import logging
 import logging.handlers
 
@@ -41,6 +42,7 @@ import gl
 from imgdownload import Download
 from iniconf import ImgDownloadIni
 from sqlitedb import USqlite
+from mysqldb import UMysql
 from cleaner import Cleaner
 
 def initLogging(logFilename):
@@ -59,6 +61,20 @@ def initLogging(logFilename):
     Rthandler.setFormatter(formatter)
     logger.addHandler(Rthandler)
 
+def mysqlPool(h,u,ps,pt,minc=5,maxc=20,maxs=10,maxcon=100,maxu=1000):
+    gl.MYSQLPOOL = PooledDB(
+        MySQLdb,
+        host = h,
+        user = u,
+        passwd = ps,
+        db = "img_url",
+        charset = "utf8",
+        mincached = minc,        #启动时开启的空连接数量
+        maxcached = maxc,        #连接池最大可用连接数量
+        maxshared = maxs,        #连接池最大可共享连接数量
+        maxconnections = maxcon, #最大允许连接数量
+        maxusage = maxu)
+
 def sqliteCustomer():
     sqlite = USqlite()
     sqlite.create_table()     #创建表
@@ -69,19 +85,18 @@ def sqliteCustomer():
     while 1:
         if not gl.QTFLAG:    #退出检测
             gl.DCFLAG = False
-            #print 'out'
             break
         try:
             sq = gl.MYQ.get(block=False)
             data = json.loads(sq)
             if data['op']==3:
-                addImg(sqlite,data)
+                sqlite.add_imgdownload(data['timestamp'],data['sqlstr'],data['path'])
             elif data['op']==7:
                 cl.clean_ot_img()
         except Queue.Empty:
             time.sleep(1)
         except Exception,e:
-            logger.exception(str(e))
+            logger.error(e)
             time.sleep(1)
             
     del sqlite
@@ -104,28 +119,23 @@ def mainCleaner():
                 logger.error(e)
         clCount += 1
         time.sleep(1)
-
-def addImg(sqlite,data):
-    try:
-        sqlite.add_imgdownload(data['timestamp'],data['sqlstr'],data['path'])
-    except sqlite3.Error as e:
-        logger.exception(e)
     
 #版本号
 def version():
-<<<<<<< HEAD
-    return 'SX-UrlImgPackage V0.2.1;port:8017;'
-=======
-    return 'SX-UrlImgPackage V0.1.0'
->>>>>>> parent of ee6c5f7... V0.2.0
+    return 'SX-UrlImgPackage V1.0.0;PORT:8017;'
 
 def hello(environ, start_response):
     '''The WSGI_ application handler which returns an iterable
     over the "Hello World!" message.'''
     #request_body = environ['wsgi.input']
     if environ['REQUEST_METHOD'] == 'POST' and environ['PATH_INFO']== '/urlimgpackage':
-        data = request_data(environ["wsgi.input"].read())
-        status = '200 OK'
+        try:
+            data = request_data(environ["wsgi.input"].read())
+            status = '200 OK'
+        except Exception as e:
+            logger.error(e)
+            data = ''
+            status = '400 Error'
     else:
         data = json.dumps({'package':None,'msg':'Request Error','code':101})
         status = '400 Bad Request'
@@ -139,7 +149,7 @@ def hello(environ, start_response):
 
 def server(description=None, **kwargs):
     '''Create the :class:`.WSGIServer` running :func:`hello`.'''
-    description = description or 'Img Package Application'
+    description = description or 'Url Img Package Application'
     
     return wsgi.WSGIServer(hello, name='UrlImgPackageServer', description=description, **kwargs)
 
@@ -151,15 +161,21 @@ def request_data(wsgi_input):
     #如果KEY不正确返回错误
     if user_info is None:
         return json.dumps({'package':None,'msg':'Key Error','code':105})
-    #JSON格式错误
-    if post_data.get('urls',None) == None:
-        return json.dumps({'package':None,'msg':'No Urls Parameter','code':110})
+
+    _id = post_data.get('id',[None])[0]
+    if _id == None:
+        return json.dumps({'package':None,'msg':'No ID Parameter','code':110})
     else:
         try:
-            url_list = json.loads(post_data.get('urls',[''])[0])
+            mysql = UMysql()
+            res = mysql.get_urls_by_id(_id)
+            url_list = json.loads(res['urls'])
         except Exception as e:
             logger.error(e)
-            return json.dumps({'package':None,'msg':'Json Format Error','code':106})
+            return json.dumps({'package':None,'msg':'SQL Error','code':106})
+        finally:
+            del mysql
+            
     #print url_list     
     gl.COUNT += 1
     imgd = Download()
@@ -171,23 +187,30 @@ def request_data(wsgi_input):
 class PackageServer:
     def __init__(self):
         self.img = ImgDownloadIni()
-        self.sys_ini = self.img.getSysConf()
+        self.sysini = self.img.get_sys_conf()
+        self.mysqlini = self.img.ge_mysql_conf()
 
-        gl.BASEPATH = self.sys_ini['path'].replace("/","\\")
+        gl.BASEPATH = self.sysini['path'].replace("/","\\")
         
         gl.MYQ = Queue.Queue()
+
+    def create_mysql(self):
+        mysqlPool(self.mysqlini['host'],self.mysqlini['user'],self.mysqlini['passwd'],self.mysqlini['port'])
+
+    def main(self):
+        self.create_mysql()
+
         t1 = threading.Thread(target=sqliteCustomer, args=())
         t2 = threading.Thread(target=mainCleaner, args=())
         t1.start()
         t2.start()
-
-    def main(self):
+        
         server().start()
 
 if __name__ == '__main__':  # pragma nocover
     initLogging(r'log\imgdownload.log')
     logger = logging.getLogger('root')
-        
+    
     ps = PackageServer()
     ps.main()
     del ps
