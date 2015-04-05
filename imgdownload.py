@@ -1,8 +1,6 @@
-# -*- coding: cp936 -*-
+# -*- coding: utf-8 -*-
 import os
-import sys
 import time
-import datetime
 import logging
 import threading
 import zipfile
@@ -10,92 +8,102 @@ import Queue
 import json
 
 import gl
-from helpfunc import HelpFunc
+from requests_func import RequestsFunc
 
 logger = logging.getLogger('root')
 
+"""
+
+多线程抓图并压缩
+
+"""
+
+
 class Download:
+
     def __init__(self):
-        self.hf = HelpFunc()  #����������
-        
-        self.basepath = gl.BASEPATH 
+        # HTTP函数类
+        self.rf = RequestsFunc()
+        # 基础路径 str
+        self.basepath = gl.BASEPATH
+        # 时间戳 int
         self.timestamp = int(time.time())
-        self.folder = str(self.timestamp)+'_'+str(gl.COUNT)
-        self.path = os.path.join(self.basepath,self.folder)
-        self.zipname = os.path.join(self.basepath,self.folder+'.zip')
-        self.sqlstr = ''
-
+        # 文件夹名 str
+        self.folder = str(self.timestamp) + '_' + str(gl.COUNT)
+        # 文件路径 str
+        self.path = os.path.join(self.basepath, self.folder)
+        # zip压缩文件名 str
+        self.zipname = os.path.join(self.basepath, self.folder + '.zip')
+        # URL地址压缩队列 object
         self.url_que = Queue.Queue()
-
+        # URL地址 list
         self.url_list = []
-        #ץͼ�߳�����
-        self.thread_num = 8
-        #ץͼ�̱߳��
-        self.img_flag = False  
-        
-    def get_img_thread(self,m,i):
-        for j in range(m,len(self.url_list),i):
+        # 抓图线程数量 int
+        self.threads_int = 8
+        # 抓图线程退出标记 bool
+        self.is_quit = False
+
+    def get_img_thread(self, m, i):
+        """抓图线程"""
+        for j in range(m, len(self.url_list), i):
             try:
-                local = self.hf.get_img_by_url(self.url_list[j],self.path,'%s.jpg'%str(j))
-                self.url_que.put(local)
+                filename = os.path.join(self.path, '%s.jpg' % str(j))
+                self.rf.send_post(self.url_list[j], filename)
+                self.url_que.put(filename)
             except Exception as e:
-                logger.error('%s: %s'%(e,self.url_list[j]))
+                logger.error('%s: %s' % (e, self.url_list[j]))
 
     def zip_thread(self):
+        """ZIP压缩线程"""
         sq = {}
         sq['op'] = 3
         sq['timestamp'] = self.timestamp
         sq['sqlstr'] = ''
         sq['path'] = self.zipname
         gl.MYQ.put(json.dumps(sq))
-        #�����ļ���
+        # 创建文件夹
         if not os.path.isdir(self.path):
             os.makedirs(self.path)
-
+        # 创建压缩文件对象
         zipfp = zipfile.ZipFile(self.zipname, 'w')
-        
+        # 从url队列中获取图片文件并压缩
         while 1:
             try:
                 localpath = self.url_que.get(block=False)
                 zipfp.write(localpath)
             except Queue.Empty:
-                if self.img_flag:
+                if self.is_quit:
                     break
                 time.sleep(1)
-            except Exception,e:
+            except Exception, e:
                 logger.exception(e)
                 time.sleep(1)
-                
-    def main(self,url_list):
+
+    def main(self, url_list):
+        """主函数"""
+        # 存放线程对象list
         threads = []
-        # �ȴ����̶߳���
+        # 先创建线程对象
         self.url_list = url_list
-        for i in range(self.thread_num):
-            threads.append(threading.Thread(target=self.get_img_thread, args=(i,self.thread_num)))
-        # ���������߳�
+        for i in range(self.threads_int):
+            threads.append(
+                threading.Thread(target=self.get_img_thread,
+                                 args=(i, self.threads_int)))
+        # 启动所有线程
         for t in threads:
             t.start()
 
         zip_t = threading.Thread(target=self.zip_thread, args=())
         zip_t.start()
-        # ���߳��еȴ��������߳��˳�
+        # 主线程中等待所有子线程退出
         for t in threads:
             t.join()
-        self.img_flag = True
+        # 退出标记设为真
+        self.is_quit = True
 
         zip_t.join()
 
-        return self.folder+'.zip'
+        return self.folder + '.zip'
 
-if __name__ == "__main__":    
-    initLogging(r'log\imgdownload.log')
-    logger = logging.getLogger('root')
-    #fc = FtpCenter()
-    #self.diskstate.checkDisk()
-    #fc.getDisk()
-    #print fc.activedisk
-##    while True:
-##        #print '123'
-##        fc.checkDisk()
-##        time.sleep(5)
-    #fc.main()
+if __name__ == "__main__":
+    print '123'

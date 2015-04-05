@@ -1,37 +1,23 @@
-# -*- coding: cp936 -*-
-#sqlite
-#sqlitepool = None
-#oracleÏß³Ì³Ø
-#orcpool = None
-#mysqlÏß³Ì³Ø
+# -*- coding: utf-8 -*-
+# mysqlçº¿ç¨‹æ± 
 MYSQLPOOL = None
-#·şÎñÕìÌı¶Ë¿Ú
-LISTEN_PORT = 21231     
-#ÉèÖÃ×Ö·û¼¯£¨ºÍPHP½»»¥µÄ×Ö·û¼¯£©
+# æœåŠ¡ä¾¦å¬ç«¯å£
+LISTEN_PORT = 21231
+# è®¾ç½®å­—ç¬¦é›†ï¼ˆå’ŒPHPäº¤äº’çš„å­—ç¬¦é›†ï¼‰
 CHARSET = "gbk"
-#Ëø
+# é”
 MYLOCK = None
-#¼ÆÊı
+# è®¡æ•°
 COUNT = 0
-#QT´òÓ¡´¥·¢
-#TRIGGER = None
-#µÇÂ¼±ê¼Ç
+# ç™»å½•æ ‡è®°
 DCFLAG = True
-#QTÍË³ö±ê¼Ç
+# QTé€€å‡ºæ ‡è®°
 QTFLAG = True
-#¶ÓÁĞ
+# é˜Ÿåˆ—
 MYQ = None
-#ÎÄ¼şÂ·¾¶
+# æ–‡ä»¶è·¯å¾„
 BASEPATH = 'imgs'
-#ÓÃ»§×Öµä
+# ç”¨æˆ·å­—å…¸
 KEYSDICT = {}
-#×ÖÌå
-##style_red    = 'size=4 face=arial color=red'
-##style_blue   = 'size=4 face=arial color=blue'
-##style_green  = 'size=4 face=arial color=green'
-##style_gray   = 'size=4 face=arial color=gray'
-##style_pink   = 'size=4 face=arial color=pink'
-##style_orange = 'size=4 face=arial color=orange'
-##style_purple = 'size=4 face=arial color=purple'          #×ÏÉ«
-##style_brown  = 'size=4 face=arial color=brown'           #ºÖÉ«
-##style_royalblue  = 'size=4 face=arial color=royalblue'   #±¦À¶É«
+# ç³»ç»Ÿé€€å‡º
+IS_SYS_QUIT = False

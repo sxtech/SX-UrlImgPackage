@@ -1,75 +1,84 @@
-# -*- coding: cp936 -*-
+# -*- coding: utf-8 -*-
 import MySQLdb
+
 import gl
 
+"""
+
+mysqlç±»
+
+"""
+
+
 class UMysql:
+
     def __init__(self):
         self.conn = gl.MYSQLPOOL.connection()
-        self.cur  = self.conn.cursor(cursorclass = MySQLdb.cursors.DictCursor)
-        
+        self.cur = self.conn.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+
     def __del__(self):
         try:
             self.cur.close()
             self.conn.close()
-        except Exception,e:
+        except Exception:
             pass
 
-    def add_urls(self,values):
+    def add_urls(self, values):
+        """Add json format url like '["http://..","h.."]' and return None."""
         try:
-            self.cur.executemany("INSERT INTO url_json (time,urls) VALUES(%s,%s)",values)
-        except MySQLdb.Error,e:
+            self.cur.executemany(
+                "INSERT INTO url_json (time,urls) VALUES(%s,%s)", values)
+        except MySQLdb.Error:
             self.conn.rollback()
             raise
         else:
             self.conn.commit()
 
-    def get_urls_by_id(self,_id):
+    def get_urls_by_id(self, _id):
+        """Get json format url by id and return tuple."""
         try:
-            self.cur.execute("SELECT * FROM url_json WHERE id=%s"%_id)
+            self.cur.execute("SELECT * FROM url_json WHERE id=%s" % _id)
             s = self.cur.fetchone()
             self.conn.commit()
-        except MySQLdb.Error,e:
+        except MySQLdb.Error:
             self.conn.rollback()
             raise
         else:
             return s
-        
-    def endOfCur(self):
+
+    def end_of_cur(self):
         self.conn.commit()
-        
-    def sqlCommit(self):
+
+    def sql_commit(self):
         self.conn.commit()
-        
-    def sqlRollback(self):
+
+    def sql_rollback(self):
         self.conn.rollback()
-            
+
 if __name__ == "__main__":
     from DBUtils.PooledDB import PooledDB
     import datetime
-    import threading
-    
-    def mysqlPool(h,u,ps,pt,minc=5,maxc=20,maxs=10,maxcon=100,maxu=1000):
+
+    def mysql_pool(h, u, ps, pt,
+                   minc=5, maxc=20, maxs=10, maxcon=100, maxu=1000):
         gl.MYSQLPOOL = PooledDB(
             MySQLdb,
-            host = h,
-            user = u,
-            passwd = ps,
-            db = "img_url",
-            charset = "utf8",
-            mincached = minc,        #Æô¶¯Ê±¿ªÆôµÄ¿ÕÁ¬½ÓÊýÁ¿
-            maxcached = maxc,        #Á¬½Ó³Ø×î´ó¿ÉÓÃÁ¬½ÓÊýÁ¿
-            maxshared = maxs,        #Á¬½Ó³Ø×î´ó¿É¹²ÏíÁ¬½ÓÊýÁ¿
-            maxconnections = maxcon, #×î´óÔÊÐíÁ¬½ÓÊýÁ¿
-            maxusage = maxu)
+            host=h,
+            user=u,
+            passwd=ps,
+            db="img_url",
+            charset="utf8",
+            mincached=minc,
+            maxcached=maxc,
+            maxshared=maxs,
+            maxconnections=maxcon,
+            maxusage=maxu
+        )
 
-    mysqlPool('localhost','root','',3306)
-    
+    mysql_pool('localhost', 'root', '', 3306)
+
     mysql = UMysql()
-    values=[(datetime.datetime.now(),'["123","456"]')]
+    values = [(datetime.datetime.now(), '["123","456"]')]
     s = mysql.get_urls_by_id(1)
     print s
     del mysql
-    
-
-    
-

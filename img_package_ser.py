@@ -1,4 +1,4 @@
-# -*- coding: cp936 -*-
+# -*- coding: utf-8 -*-
 '''This example is a simple WSGI_ script which displays
 the ``Hello World!`` message. To run the script type::
 
@@ -21,12 +21,10 @@ import urllib
 import urlparse
 import threading
 import Queue
-import MySQLdb
 import logging
 import logging.handlers
 
 from DBUtils.PooledDB import PooledDB
-from DBUtils.PersistentDB import PersistentDB
 
 try:
     from pulsar import MethodNotAllowed
@@ -36,7 +34,7 @@ except ImportError:  # pragma nocover
     from pulsar import MethodNotAllowed
 
 from pulsar.apps import wsgi
-from pulsar.apps import socket 
+import MySQLdb
 
 import gl
 from imgdownload import Download
@@ -45,90 +43,108 @@ from sqlitedb import USqlite
 from mysqldb import UMysql
 from cleaner import Cleaner
 
-def initLogging(logFilename):
+
+def init_logging(log_file_name):
     """Init for logging"""
-    path = os.path.split(logFilename)
+    path = os.path.split(log_file_name)
     if os.path.isdir(path[0]):
         pass
     else:
         os.makedirs(path[0])
     logger = logging.getLogger('root')
-    
-    Rthandler = logging.handlers.RotatingFileHandler(logFilename, maxBytes=100*1024*1024,backupCount=5)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s %(filename)s[line:%(lineno)d] [%(levelname)s] %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
-    Rthandler.setFormatter(formatter)
-    logger.addHandler(Rthandler)
 
-def mysqlPool(h,u,ps,pt,minc=5,maxc=20,maxs=10,maxcon=100,maxu=1000):
+    rthandler = logging.handlers.RotatingFileHandler(
+        log_file_name, maxBytes=100 * 1024 * 1024, backupCount=5)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        '%(asctime)s %(filename)s[line:%(lineno)d] \
+        [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    rthandler.setFormatter(formatter)
+    logger.addHandler(rthandler)
+
+
+def mysql_pool(h, u, ps, pt, minc=5, maxc=20, maxs=10, maxcon=100, maxu=1000):
+    """mysqlÁ∫øÁ®ãÊ±†"""
     gl.MYSQLPOOL = PooledDB(
         MySQLdb,
-        host = h,
-        user = u,
-        passwd = ps,
-        db = "img_url",
-        charset = "utf8",
-        mincached = minc,        #∆Ù∂Ø ±ø™∆Ùµƒø’¡¨Ω” ˝¡ø
-        maxcached = maxc,        #¡¨Ω”≥ÿ◊Ó¥Ûø…”√¡¨Ω” ˝¡ø
-        maxshared = maxs,        #¡¨Ω”≥ÿ◊Ó¥Ûø…π≤œÌ¡¨Ω” ˝¡ø
-        maxconnections = maxcon, #◊Ó¥Û‘ –Ì¡¨Ω” ˝¡ø
-        maxusage = maxu)
+        host=h,
+        user=u,
+        passwd=ps,
+        db="img_url",
+        charset="utf8",
+        mincached=minc,
+        maxcached=maxc,
+        maxshared=maxs,
+        maxconnections=maxcon,
+        maxusage=maxu)
 
-def sqliteCustomer():
+
+def sqlite_customer():
+    """sqliteÊï∞ÊçÆÂ∫ìÊìç‰ΩúÊâßË°åÁ∫øÁ®ã"""
+    # ÂàõÂª∫sqliteÂØπË±°
     sqlite = USqlite()
-    sqlite.create_table()     #¥¥Ω®±Ì
-    cl = Cleaner(sqlite)      #«Â≥˝Œƒº˛¿‡∂‘œÛ
+    # ÂàõÂª∫Êï∞ÊçÆÂ∫ìË°®
+    sqlite.create_table()
+    # Ê∏ÖÈô§Êñá‰ª∂Á±ªÂØπË±°
+    cl = Cleaner(sqlite)
     for i in sqlite.get_users():
-        gl.KEYSDICT[i['key']] = {'priority':i['priority'],'power':i['power']}
-    #print gl.KEYSDICT
+        gl.KEYSDICT[i['key']] = {
+            'priority': i['priority'], 'power': i['power']}
+
     while 1:
-        if not gl.QTFLAG:    #ÕÀ≥ˆºÏ≤‚
-            gl.DCFLAG = False
+        # ÈÄÄÂá∫Ê£ÄÊµã
+        if not gl.IS_SYS_QUIT:
             break
         try:
             sq = gl.MYQ.get(block=False)
             data = json.loads(sq)
-            if data['op']==3:
-                sqlite.add_imgdownload(data['timestamp'],data['sqlstr'],data['path'])
-            elif data['op']==7:
+            if data['op'] == 3:
+                sqlite.add_imgdownload(
+                    data['timestamp'], data['sqlstr'], data['path'])
+            elif data['op'] == 7:
                 cl.clean_ot_img()
         except Queue.Empty:
             time.sleep(1)
-        except Exception,e:
+        except Exception, e:
             logger.error(e)
             time.sleep(1)
-            
+
     del sqlite
     del cl
 
-def mainCleaner():
-    clCount = 0
+
+def loop_cleaner():
+    """ÊØèÈöî30ÁßíÊâßË°åcleanerÊìç‰Ωú"""
+    # Ê∏ÖÁêÜËÆ°Êï∞
+    cl_count = 0
     while 1:
-        if not gl.QTFLAG:    #ÕÀ≥ˆºÏ≤‚
-            gl.DCFLAG = False
+        # ÈÄÄÂá∫Ê£ÄÊµã
+        if not gl.IS_SYS_QUIT:
             break
         else:
             try:
-                if clCount>30:
-                    clCount = 0
+                if cl_count > 30:
+                    cl_count = 0
                     sq = {}
                     sq['op'] = 7
                     gl.MYQ.put(json.dumps(sq))
-            except Exception,e:
+            except Exception, e:
                 logger.error(e)
-        clCount += 1
+        cl_count += 1
         time.sleep(1)
-    
-#∞Ê±æ∫≈
+
+
 def version():
+    """ÁâàÊú¨Âè∑"""
     return 'SX-UrlImgPackage V1.0.0;PORT:8017;'
+
 
 def hello(environ, start_response):
     '''The WSGI_ application handler which returns an iterable
     over the "Hello World!" message.'''
-    #request_body = environ['wsgi.input']
-    if environ['REQUEST_METHOD'] == 'POST' and environ['PATH_INFO']== '/urlimgpackage':
+
+    if (environ['REQUEST_METHOD'] == 'POST' and
+            environ['PATH_INFO'] == '/urlimgpackage'):
         try:
             data = request_data(environ["wsgi.input"].read())
             status = '200 OK'
@@ -137,9 +153,10 @@ def hello(environ, start_response):
             data = ''
             status = '400 Error'
     else:
-        data = json.dumps({'package':None,'msg':'Request Error','code':101})
+        data = json.dumps(
+            {'package': None, 'msg': 'Request Error', 'code': 101})
         status = '400 Bad Request'
-        
+
     response_headers = [
         ('Content-type', 'text/plain'),
         ('Content-Length', str(len(data)))
@@ -147,24 +164,33 @@ def hello(environ, start_response):
     start_response(status, response_headers)
     return iter([data])
 
+
 def server(description=None, **kwargs):
-    '''Create the :class:`.WSGIServer` running :func:`hello`.'''
+    '''
+
+    Create the :class:`.WSGIServer` running :func:`hello`.
+
+    '''
+
     description = description or 'Url Img Package Application'
-    
-    return wsgi.WSGIServer(hello, name='UrlImgPackageServer', description=description, **kwargs)
+
+    return wsgi.WSGIServer(hello, name='UrlImgPackageServer',
+                           description=description, **kwargs)
+
 
 def request_data(wsgi_input):
     data = urllib.unquote_plus(wsgi_input)
-    post_data = urlparse.parse_qs(data,True)
+    post_data = urlparse.parse_qs(data, True)
 
-    user_info =  gl.KEYSDICT.get(post_data.get('key',[None])[0],None)
-    #»Áπ˚KEY≤ª’˝»∑∑µªÿ¥ÌŒÛ
+    user_info = gl.KEYSDICT.get(post_data.get('key', [None])[0], None)
+
     if user_info is None:
-        return json.dumps({'package':None,'msg':'Key Error','code':105})
+        return json.dumps({'package': None, 'msg': 'Key Error', 'code': 105})
 
-    _id = post_data.get('id',[None])[0]
-    if _id == None:
-        return json.dumps({'package':None,'msg':'No ID Parameter','code':110})
+    _id = post_data.get('id', [None])[0]
+    if _id is None:
+        return json.dumps({'package': None, 'msg': 'No ID Parameter',
+                          'code': 110})
     else:
         try:
             mysql = UMysql()
@@ -172,45 +198,56 @@ def request_data(wsgi_input):
             url_list = json.loads(res['urls'])
         except Exception as e:
             logger.error(e)
-            return json.dumps({'package':None,'msg':'SQL Error','code':106})
+            return json.dumps({'package': None, 'msg': 'SQL Error',
+                              'code': 106})
         finally:
             del mysql
-            
-    #print url_list     
+
     gl.COUNT += 1
     imgd = Download()
     zipfile = imgd.main(url_list)
     del imgd
-    
-    return json.dumps({'package':zipfile,'msg':'Success','code':100})
+
+    return json.dumps({'package': zipfile, 'msg': 'Success', 'code': 100})
+
 
 class PackageServer:
-    def __init__(self):
-        self.img = ImgDownloadIni()
-        self.sysini = self.img.get_sys_conf()
-        self.mysqlini = self.img.ge_mysql_conf()
 
-        gl.BASEPATH = self.sysini['path'].replace("/","\\")
-        
+    def __init__(self):
+        # ÈÖçÁΩÆÊñá‰ª∂ÂØπË±°
+        self.ini = ImgDownloadIni()
+        self.sysini = self.ini.get_sys_conf()
+        self.mysqlini = self.ini.ge_mysql_conf()
+        # Âü∫Á°ÄË∑ØÂæÑ str
+        gl.BASEPATH = self.sysini['path'].replace("/", "\\")
+        # URLÂú∞ÂùÄÂéãÁº©ÈòüÂàó object
         gl.MYQ = Queue.Queue()
 
+    def __del__(self):
+        # Á≥ªÁªüÈÄÄÂá∫ËÆæ‰∏∫Áúü
+        gl.IS_SYS_QUIT = True
+        
+        del self.ini
+
     def create_mysql(self):
-        mysqlPool(self.mysqlini['host'],self.mysqlini['user'],self.mysqlini['passwd'],self.mysqlini['port'])
+        """ÂàõÂª∫mysqlÁ∫øÁ®ãÊ±†"""
+        mysql_pool(self.mysqlini['host'], self.mysqlini[
+                   'user'], self.mysqlini['passwd'], self.mysqlini['port'])
 
     def main(self):
         self.create_mysql()
 
-        t1 = threading.Thread(target=sqliteCustomer, args=())
-        t2 = threading.Thread(target=mainCleaner, args=())
+        t1 = threading.Thread(target=sqlite_customer, args=())
+        t2 = threading.Thread(target=loop_cleaner, args=())
         t1.start()
         t2.start()
-        
+
         server().start()
 
 if __name__ == '__main__':  # pragma nocover
-    initLogging(r'log\imgdownload.log')
+    init_logging(r'log\imgdownload.log')
     logger = logging.getLogger('root')
-    
+
     ps = PackageServer()
     ps.main()
     del ps
