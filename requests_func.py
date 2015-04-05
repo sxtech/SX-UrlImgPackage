@@ -14,6 +14,8 @@ class RequestsFunc:
             with open(path, 'wb') as f:
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, f)
+        # 非200响应,抛出异常
+        r.raise_for_status()
 
     def send_post(self, url, send_data):
         """POST请求"""
@@ -23,7 +25,8 @@ class RequestsFunc:
 
 if __name__ == '__main__':
     rf = RequestsFunc()
-    url = 'http://127.0.0.1:8017/urlimgpackage'
-    data = {'key': 'sx2767722', 'id': 1}
-
-    print rf.send_post(url, data)
+    #url = 'http://127.0.0.1:8017/urlimgpackage'
+    #data = {'key': 'sx2767722', 'id': 1}
+    url = 'http://localhost/imgareaselect/imgs/1.jpg'
+    rf.get_url_img(url,'c:/imgdownload/test2.jpg')
+    #print rf.send_post(url, data)
