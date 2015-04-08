@@ -23,20 +23,20 @@ class UrlError(Exception):
 
 
 class HelpFunc:
-    """¸¨Öúº¯ÊıÀà"""
+    """è¾…åŠ©å‡½æ•°ç±»"""
     def get_time(self):
-        """"·µ»Øµ±Ç°Ê±¼ä¸ñÊ½»¯×Ö·û´®"""
+        """"è¿”å›å½“å‰æ—¶é—´æ ¼å¼åŒ–å­—ç¬¦ä¸²"""
         return datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
 
     def ip_to_bigint(self, ipaddr):
-        """"×Ö·û´®ÀàĞÍIP×ª»»³ÉÕûĞÍ"""
+        """"å­—ç¬¦ä¸²ç±»å‹IPè½¬æ¢æˆæ•´å‹"""
         ip_strs = ipaddr.split(".")
 
         return str(int(ip_strs[3]) + int(ip_strs[2]) * 256 + int(ip_strs[1]) *
                    256 * 256 + int(ip_strs[0]) * 256 * 256 * 256)
 
     def bigint_to_ip(self, int_str):
-        """"ÕûĞÍIP×ª»»³É×Ö·û´®ÀàĞÍ"""
+        """"æ•´å‹IPè½¬æ¢æˆå­—ç¬¦ä¸²ç±»å‹"""
         bigint = int(int_str)
 
         first = bigint / (256 * 256 * 256)
@@ -51,7 +51,7 @@ class HelpFunc:
         return "%d.%d.%d.%d" % (first, second, third, fourth)
 
     def get_img_by_url(self, url, path, filename):
-        """¸ù¾İURLµØÖ·×¥Í¼µ½±¾µØÎÄ¼ş¼Ğ£¬·µ»ØstrÀàĞÍÎÄ¼şÃû"""
+        """æ ¹æ®URLåœ°å€æŠ“å›¾åˆ°æœ¬åœ°æ–‡ä»¶å¤¹ï¼Œè¿”å›strç±»å‹æ–‡ä»¶å"""
         try:
             local = os.path.join(path, filename)
             filename, headers = urllib.urlretrieve(
@@ -63,4 +63,5 @@ class HelpFunc:
 
 if __name__ == '__main__':
     hf = HelpFunc()
-    print hf.getTime()
+    print hf.get_time()
+    del hf

@@ -48,7 +48,8 @@ class Download:
         for j in range(m, len(self.url_list), i):
             try:
                 filename = os.path.join(self.path, '%s.jpg' % str(j))
-                self.rf.send_post(self.url_list[j], filename)
+                self.rf.get_url_img(self.url_list[j], filename)
+                print self.url_list[j]
                 self.url_que.put(filename)
             except Exception as e:
                 logger.error('%s: %s' % (e, self.url_list[j]))

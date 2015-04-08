@@ -24,8 +24,6 @@ import Queue
 import logging
 import logging.handlers
 
-from DBUtils.PooledDB import PooledDB
-
 try:
     from pulsar import MethodNotAllowed
 except ImportError:  # pragma nocover
@@ -35,6 +33,7 @@ except ImportError:  # pragma nocover
 
 from pulsar.apps import wsgi
 import MySQLdb
+from DBUtils.PooledDB import PooledDB
 
 import gl
 from imgdownload import Download
@@ -136,7 +135,7 @@ def loop_cleaner():
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V1.0.0;PORT:8017;'
+    return 'SX-UrlImgPackage V2.0.2;PORT:8017;'
 
 
 def hello(environ, start_response):
@@ -181,7 +180,7 @@ def server(description=None, **kwargs):
 def request_data(wsgi_input):
     data = urllib.unquote_plus(wsgi_input)
     post_data = urlparse.parse_qs(data, True)
-
+    print post_data
     user_info = gl.KEYSDICT.get(post_data.get('key', [None])[0], None)
 
     if user_info is None:
