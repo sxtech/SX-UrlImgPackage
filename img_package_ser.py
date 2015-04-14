@@ -52,14 +52,14 @@ def sqlite_customer():
     cl_count = 0
     while 1:
         # 退出检测
-        if not gl.IS_SYS_QUIT:
+        if gl.IS_SYS_QUIT:
             break
         try:
             sq = gl.MYQ.get(timeout=1)
             data = json.loads(sq)
             sqlite.add_imgdownload(
                 data['timestamp'], data['ip'], data['path'])
-            
+
             if cl_count > 30:
                 cl.clean_ot_img()
                 cl_count = 0
@@ -77,7 +77,7 @@ def sqlite_customer():
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.0.0'
+    return 'SX-UrlImgPackage V3.0.2'
 
 app = Flask(__name__)
 
@@ -138,7 +138,7 @@ class PackageServer:
     def __del__(self):
         # 系统退出设为真
         gl.IS_SYS_QUIT = True
-
+        logger.warning('Sys Quit')
         del self.ini
 
     def main(self):

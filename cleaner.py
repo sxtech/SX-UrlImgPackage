@@ -34,7 +34,7 @@ class Cleaner:
         if s != []:
             for i in s:
                 if i['path'] is not None and i['path'] != '':
-                    print 'clean %s' % i['path']
+                    logger.info('Cleaned %s' % i['path'])
                     self.clean_file(i['path'])
                 self.sqlite.update_imgdownload_by_id(i['id'])
 
