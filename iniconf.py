@@ -23,22 +23,6 @@ class ImgDownloadIni:
         sysconf['port'] = self.cf.getint('SYSSET', 'port')
         return sysconf
 
-    def ge_mysql_conf(self):
-        """mysql参数"""
-        mysqlconf = {}
-        mysqlconf['host'] = self.cf.get('MYSQLSET', 'host')
-        mysqlconf['user'] = self.cf.get('MYSQLSET', 'user')
-        mysqlconf['passwd'] = self.cf.get('MYSQLSET', 'passwd')
-        mysqlconf['port'] = self.cf.getint('MYSQLSET', 'port')
-        mysqlconf['mincached'] = self.cf.getint('MYSQLSET', 'mincached')
-        mysqlconf['maxcached'] = self.cf.getint('MYSQLSET', 'maxcached')
-        mysqlconf['maxshared'] = self.cf.getint('MYSQLSET', 'maxshared')
-        mysqlconf['maxconnections'] = self.cf.getint(
-            'MYSQLSET', 'maxconnections')
-        mysqlconf['maxusage'] = self.cf.getint('MYSQLSET', 'maxusage')
-
-        return mysqlconf
-
 
 if __name__ == "__main__":
 

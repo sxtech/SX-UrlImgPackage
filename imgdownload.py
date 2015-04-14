@@ -49,7 +49,6 @@ class Download:
             try:
                 filename = os.path.join(self.path, '%s.jpg' % str(j))
                 self.rf.get_url_img(self.url_list[j], filename)
-                print self.url_list[j]
                 self.url_que.put(filename)
             except Exception as e:
                 logger.error('%s: %s' % (e, self.url_list[j]))

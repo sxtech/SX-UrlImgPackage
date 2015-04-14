@@ -27,6 +27,6 @@ if __name__ == '__main__':
     rf = RequestsFunc()
     #url = 'http://127.0.0.1:8017/urlimgpackage'
     #data = {'key': 'sx2767722', 'id': 1}
-    url = 'http://localhost/imgareaselect/imgs/1.jpg'
-    rf.get_url_img(url,'c:/imgdownload/test2.jpg')
+    url = 'http://localhost/imgareaselect/imgs/马刺/1.jpg'.decode('utf8')
+    rf.get_url_img(url,'c:/imgdownload/test3.jpg')
     #print rf.send_post(url, data)
