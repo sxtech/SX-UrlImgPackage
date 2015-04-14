@@ -48,22 +48,23 @@ def sqlite_customer():
     for i in sqlite.get_users():
         gl.KEYSDICT[i['key']] = {'priority': i['priority'], 'power': i['power']}
 
+    # 清理计数
     cl_count = 0
     while 1:
         # 退出检测
         if not gl.IS_SYS_QUIT:
             break
         try:
-            sq = gl.MYQ.get(block=False)
+            sq = gl.MYQ.get(timeout=1)
             data = json.loads(sq)
-            if data['op'] == 3:
-                sqlite.add_imgdownload(
-                    data['timestamp'], data['sqlstr'], data['path'])
+            sqlite.add_imgdownload(
+                data['timestamp'], data['ip'], data['path'])
+            
             if cl_count > 30:
                 cl.clean_ot_img()
                 cl_count = 0
         except Queue.Empty:
-            time.sleep(1)
+            pass
         except Exception, e:
             logger.error(e)
             time.sleep(1)
@@ -116,7 +117,7 @@ def request_data(request):
         return json.dumps({'package': None, 'msg': 'URL Error', 'code': 106})
 
     gl.COUNT += 1
-    imgd = Download()
+    imgd = Download(request.remote_addr)
     zipfile = imgd.main(url_list)
     del imgd
 

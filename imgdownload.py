@@ -21,7 +21,9 @@ logger = logging.getLogger('root')
 
 class Download:
 
-    def __init__(self):
+    def __init__(self, ip='127.0.0.1'):
+        # 请求IP
+        self.ip = ip
         # HTTP函数类
         self.rf = RequestsFunc()
         # 基础路径 str
@@ -56,9 +58,8 @@ class Download:
     def zip_thread(self):
         """ZIP压缩线程"""
         sq = {}
-        sq['op'] = 3
         sq['timestamp'] = self.timestamp
-        sq['sqlstr'] = ''
+        sq['ip'] = self.ip
         sq['path'] = self.zipname
         gl.MYQ.put(json.dumps(sq))
         # 创建文件夹
@@ -69,12 +70,11 @@ class Download:
         # 从url队列中获取图片文件并压缩
         while 1:
             try:
-                localpath = self.url_que.get(block=False)
-                zipfp.write(localpath)
+                img_file = self.url_que.get(timeout=1)
+                zipfp.write(img_file)
             except Queue.Empty:
                 if self.is_quit:
                     break
-                time.sleep(1)
             except Exception, e:
                 logger.exception(e)
                 time.sleep(1)
