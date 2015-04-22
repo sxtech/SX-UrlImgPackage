@@ -10,6 +10,9 @@ import logging.handlers
 
 from flask import Flask
 from flask import request
+from flask import abort
+from flask import jsonify
+from flask import make_response
 
 import gl
 from imgdownload import Download
@@ -87,41 +90,34 @@ def hello():
     return "Welcome to use %s" % version()
 
 
-@app.route("/package", methods=['GET', 'POST'])
+@app.route("/package", methods=['POST'])
 def package():
-    if request.method == 'POST':
-        return request_data(request)
-    else:
-        return json.dumps({'package': None,
-                           'msg': 'GET Mothod Is Not Support',
-                           'code': 104})
+    if not request.json:
+        return jsonify({'package': None, 'msg': 'Bad Request',
+                        'code': 400}), 400
+    if request.json.get('key', None) not in gl.KEYSDICT:
+        return jsonify({'package': None, 'msg': 'Key Error',
+                        'code': 105}), 400
+    if 'urls' not in request.json:
+        return jsonify({'package': None, 'msg': 'No "urls" key',
+                        'code': 106}), 400
+    print request.json
+    gl.COUNT += 1
+    imgd = Download(request.remote_addr)
+    zipfile = imgd.main(request.json.get('urls',[]))
+    del imgd
+    print zipfile
+    return jsonify({'package': zipfile, 'msg': 'Success', 'code': 100}), 200
 
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'package': None,
+                                  'msg': 'Not Found',
+                                  'code': 404}), 404)
 
 def server(_port):
     app.run(host="0.0.0.0", port=_port)
-
-
-def request_data(request):
-    key = request.form.get('key', None)
-    if key in gl.KEYSDICT:
-        return json.dumps({'package': None, 'msg': 'Key Error', 'code': 105})
-
-    urls = request.form.get('urls', None)
-    if urls is None:
-        return json.dumps({'package': None, 'msg': 'URL Error', 'code': 106})
-
-    try:
-        url_list = json.loads(urls)
-    except Exception as e:
-        logger.error(e)
-        return json.dumps({'package': None, 'msg': 'URL Error', 'code': 106})
-
-    gl.COUNT += 1
-    imgd = Download(request.remote_addr)
-    zipfile = imgd.main(url_list)
-    del imgd
-
-    return json.dumps({'package': zipfile, 'msg': 'Success', 'code': 100})
 
 
 class PackageServer:

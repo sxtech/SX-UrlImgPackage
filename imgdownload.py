@@ -89,10 +89,10 @@ class Download:
             threads.append(
                 threading.Thread(target=self.get_img_thread,
                                  args=(i, self.threads_int)))
-        # 启动所有线程
+        # 启动抓图线程
         for t in threads:
             t.start()
-
+        # 压缩文件线程
         zip_t = threading.Thread(target=self.zip_thread, args=())
         zip_t.start()
         # 主线程中等待所有子线程退出
