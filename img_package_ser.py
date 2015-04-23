@@ -10,9 +10,10 @@ import logging.handlers
 
 from flask import Flask
 from flask import request
-from flask import abort
-from flask import jsonify
-from flask import make_response
+from flask_restful import reqparse
+from flask_restful import abort
+from flask_restful import Api
+from flask_restful import Resource
 
 import gl
 from imgdownload import Download
@@ -40,84 +41,41 @@ def init_logging(log_file_name):
     logger.addHandler(rthandler)
 
 
-def sqlite_customer():
-    """sqlite数据库操作执行线程"""
-    # 创建sqlite对象
-    sqlite = USqlite()
-    # 创建数据库表
-    sqlite.create_table()
-    # 清除文件类对象
-    cl = Cleaner(sqlite)
-    for i in sqlite.get_users():
-        gl.KEYSDICT[i['key']] = {'priority': i['priority'], 'power': i['power']}
-
-    # 清理计数
-    cl_count = 0
-    while 1:
-        # 退出检测
-        if gl.IS_SYS_QUIT:
-            break
-        try:
-            sq = gl.MYQ.get(timeout=1)
-            data = json.loads(sq)
-            sqlite.add_imgdownload(
-                data['timestamp'], data['ip'], data['path'])
-
-            if cl_count > 30:
-                cl.clean_ot_img()
-                cl_count = 0
-        except Queue.Empty:
-            pass
-        except Exception, e:
-            logger.error(e)
-            time.sleep(1)
-        finally:
-            cl_count += 1
-
-    del sqlite
-    del cl
-
-
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.0.2'
+    return 'SX-UrlImgPackage V3.2.0'
+
 
 app = Flask(__name__)
+api = Api(app)
 
 
-@app.route("/")
-def hello():
-    return "Welcome to use %s" % version()
+class Hello(Resource):
+
+    def get(self):
+        return {'message': "Welcome to use %s" % version()}
 
 
-@app.route("/package", methods=['POST'])
-def package():
-    if not request.json:
-        return jsonify({'package': None, 'msg': 'Bad Request',
-                        'code': 400}), 400
-    if request.json.get('key', None) not in gl.KEYSDICT:
-        return jsonify({'package': None, 'msg': 'Key Error',
-                        'code': 105}), 400
-    if 'urls' not in request.json:
-        return jsonify({'package': None, 'msg': 'No "urls" key',
-                        'code': 106}), 400
-    print request.json
-    gl.COUNT += 1
-    imgd = Download(request.remote_addr)
-    zipfile = imgd.main(request.json.get('urls',[]))
-    del imgd
-    print zipfile
-    return jsonify({'package': zipfile, 'msg': 'Success', 'code': 100}), 200
+class TodoList(Resource):
+
+    def post(self):
+        if not request.json:
+            return {'package': None, 'msg': 'Bad Request', 'code': 400}, 400
+        if request.json.get('key', None) not in gl.KEYSDICT:
+            return {'package': None, 'msg': 'Key Error', 'code': 105}, 400
+        if 'urls' not in request.json:
+            return {'package': None, 'msg': 'No "urls" key', 'code': 106}, 400
+
+        gl.COUNT += 1
+        imgd = Download(request.remote_addr)
+        zipfile = imgd.main(request.json.get('urls', []))
+        del imgd
+
+        return {'package': zipfile, 'msg': 'Success', 'code': 100}, 201
 
 
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'package': None,
-                                  'msg': 'Not Found',
-                                  'code': 404}), 404)
-
-def server(_port):
-    app.run(host="0.0.0.0", port=_port)
+api.add_resource(Hello, '/')
+api.add_resource(TodoList, '/package')
 
 
 class PackageServer:
@@ -137,11 +95,49 @@ class PackageServer:
         logger.warning('Sys Quit')
         del self.ini
 
+    def sqlite_customer(self):
+        """sqlite数据库操作执行线程"""
+        # 创建sqlite对象
+        sqlite = USqlite()
+        # 创建数据库表
+        sqlite.create_table()
+        # 清除文件类对象
+        cl = Cleaner(sqlite)
+        for i in sqlite.get_users():
+            gl.KEYSDICT[i['key']] = {'priority': i['priority'],
+                                     'power': i['power']}
+
+        # 清理计数
+        cl_count = 0
+        while 1:
+            # 退出检测
+            if gl.IS_SYS_QUIT:
+                break
+            try:
+                sq = gl.MYQ.get(timeout=1)
+                data = json.loads(sq)
+                sqlite.add_imgdownload(
+                    data['timestamp'], data['ip'], data['path'])
+
+                if cl_count > 30:
+                    cl.clean_ot_img()
+                    cl_count = 0
+            except Queue.Empty:
+                pass
+            except Exception, e:
+                logger.error(e)
+                time.sleep(1)
+            finally:
+                cl_count += 1
+
+        del sqlite
+        del cl
+
     def main(self):
-        t = threading.Thread(target=sqlite_customer, args=())
+        t = threading.Thread(target=self.sqlite_customer, args=())
         t.start()
 
-        server(self.sysini.get('port', 8017))
+        app.run(host="0.0.0.0", port=self.sysini.get('port', 8017))
 
 if __name__ == '__main__':  # pragma nocover
     init_logging(r'log\imgdownload.log')
