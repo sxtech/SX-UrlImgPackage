@@ -43,7 +43,7 @@ def init_logging(log_file_name):
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.2.0'
+    return 'SX-UrlImgPackage V3.2.1'
 
 
 app = Flask(__name__)
