@@ -5,9 +5,8 @@ import json
 import time
 import threading
 import Queue
-import logging
-import logging.handlers
 
+from logbook import Logger
 from flask import Flask
 from flask import request
 from flask_restful import reqparse
@@ -20,30 +19,12 @@ from imgdownload import Download
 from iniconf import ImgDownloadIni
 from sqlitedb import USqlite
 from cleaner import Cleaner
-
-
-def init_logging(log_file_name):
-    """Init for logging"""
-    path = os.path.split(log_file_name)
-    if os.path.isdir(path[0]):
-        pass
-    else:
-        os.makedirs(path[0])
-    logger = logging.getLogger('root')
-
-    rthandler = logging.handlers.RotatingFileHandler(
-        log_file_name, maxBytes=100 * 1024 * 1024, backupCount=5)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        '%(asctime)s %(filename)s[line:%(lineno)d] \
-        [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    rthandler.setFormatter(formatter)
-    logger.addHandler(rthandler)
+from my_log import MyLog
 
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.2.1'
+    return 'SX-UrlImgPackage V3.3.0'
 
 
 app = Flask(__name__)
@@ -60,7 +41,7 @@ class TodoList(Resource):
 
     def post(self):
         if not request.json:
-            return {'package': None, 'msg': 'Bad Request', 'code': 400}, 400
+            return {'package': None, 'msg': 'Bad Request', 'code': 104}, 400
         if request.json.get('key', None) not in gl.KEYSDICT:
             return {'package': None, 'msg': 'Key Error', 'code': 105}, 400
         if 'urls' not in request.json:
@@ -89,10 +70,12 @@ class PackageServer:
         # URL地址压缩队列 object
         gl.MYQ = Queue.Queue()
 
+        log.notice('Sys Start')
+
     def __del__(self):
         # 系统退出设为真
         gl.IS_SYS_QUIT = True
-        logger.warning('Sys Quit')
+        log.notice('Sys Quit')
         del self.ini
 
     def sqlite_customer(self):
@@ -125,7 +108,7 @@ class PackageServer:
             except Queue.Empty:
                 pass
             except Exception, e:
-                logger.error(e)
+                log.error(e)
                 time.sleep(1)
             finally:
                 cl_count += 1
@@ -139,9 +122,10 @@ class PackageServer:
 
         app.run(host="0.0.0.0", port=self.sysini.get('port', 8017))
 
-if __name__ == '__main__':  # pragma nocover
-    init_logging(r'log\imgdownload.log')
-    logger = logging.getLogger('root')
+if __name__ == '__main__':
+    my_log = MyLog('log\package.log')
+    my_log.rotating()
+    log = Logger('Package')
 
     ps = PackageServer()
     ps.main()
