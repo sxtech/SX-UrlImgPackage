@@ -3,10 +3,9 @@ import os
 import time
 import datetime
 import shutil
+import logging
 
-from logbook import Logger
-
-log = Logger('Package')
+logger = logging.getLogger('root')
 
 
 class Cleaner:
@@ -20,11 +19,11 @@ class Cleaner:
         try:
             os.remove(filename)
         except Exception, e:
-            log.error('file: %s; error: %s'%(filename,e))
+            logger.error(e)
         try:
             shutil.rmtree(filename[:-4])
         except Exception, e:
-            log.error('file: %s; error: %s'%(filename,e))
+            logger.error(e)
 
     def clean_ot_img(self):
         """删除超时图片文件"""
@@ -44,7 +43,7 @@ class Cleaner:
             try:
                 self.clean_ot_img()
             except Exception, e:
-                log.error(e)
+                logger.error(e)
             time.sleep(60)
 
 if __name__ == "__main__":

@@ -5,8 +5,9 @@ import json
 import time
 import threading
 import Queue
+import logging
+import logging.handlers
 
-from logbook import Logger
 from flask import Flask
 from flask import request
 from flask_restful import reqparse
@@ -19,19 +20,37 @@ from imgdownload import Download
 from iniconf import ImgDownloadIni
 from sqlitedb import USqlite
 from cleaner import Cleaner
-from my_log import MyLog
+
+
+def init_logging(log_file_name):
+    """Init for logging"""
+    path = os.path.split(log_file_name)
+    if os.path.isdir(path[0]):
+        pass
+    else:
+        os.makedirs(path[0])
+    logger = logging.getLogger('root')
+
+    rthandler = logging.handlers.RotatingFileHandler(
+        log_file_name, maxBytes=100 * 1024 * 1024, backupCount=5)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        '%(asctime)s %(filename)s[line:%(lineno)d] \
+        [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    rthandler.setFormatter(formatter)
+    logger.addHandler(rthandler)
 
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.3.0'
+    return 'SX-UrlImgPackage V3.4.0'
 
 
 app = Flask(__name__)
 api = Api(app)
 
 
-class Hello(Resource):
+class Index(Resource):
 
     def get(self):
         return {'message': "Welcome to use %s" % version()}
@@ -41,9 +60,9 @@ class TodoList(Resource):
 
     def post(self):
         if not request.json:
-            return {'package': None, 'msg': 'Bad Request', 'code': 104}, 400
+            return {'package': None, 'msg': 'Bad Request', 'code': 400}, 400
         if request.json.get('key', None) not in gl.KEYSDICT:
-            return {'package': None, 'msg': 'Key Error', 'code': 105}, 400
+            return {'package': None, 'msg': 'Key Error', 'code': 105}, 401
         if 'urls' not in request.json:
             return {'package': None, 'msg': 'No "urls" key', 'code': 106}, 400
 
@@ -54,10 +73,29 @@ class TodoList(Resource):
 
         return {'package': zipfile, 'msg': 'Success', 'code': 100}, 201
 
+class PackageListAPIV1(Resource):
 
-api.add_resource(Hello, '/')
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('key', type=unicode, required=True,
+                            help='Need a key value', location='json')
+        parser.add_argument('urls', type=list,required=True,
+                            help='Need a url json array', location='json')
+        args = parser.parse_args()
+
+        if request.json.get('key', None) not in gl.KEYSDICT:
+            return {'status':401, 'message': 'Unauthorized access'}, 401
+
+        gl.COUNT += 1
+        imgd = Download(request.remote_addr)
+        zipfile = imgd.main(request.json.get('urls', []))
+        del imgd
+
+        return {'status':201, 'message':'Created', 'package': zipfile}, 201
+
+api.add_resource(Index, '/')
 api.add_resource(TodoList, '/package')
-
+api.add_resource(PackageListAPIV1, '/v1/package')
 
 class PackageServer:
 
@@ -70,12 +108,14 @@ class PackageServer:
         # URL地址压缩队列 object
         gl.MYQ = Queue.Queue()
 
-        log.notice('Sys Start')
+        self.port = self.sysini.get('port', 8017)
+
+        logger.warning('Sys Start')
 
     def __del__(self):
         # 系统退出设为真
         gl.IS_SYS_QUIT = True
-        log.notice('Sys Quit')
+        logger.warning('Sys Quit')
         del self.ini
 
     def sqlite_customer(self):
@@ -108,7 +148,7 @@ class PackageServer:
             except Queue.Empty:
                 pass
             except Exception, e:
-                log.error(e)
+                logger.error(e)
                 time.sleep(1)
             finally:
                 cl_count += 1
@@ -120,12 +160,11 @@ class PackageServer:
         t = threading.Thread(target=self.sqlite_customer, args=())
         t.start()
 
-        app.run(host="0.0.0.0", port=self.sysini.get('port', 8017))
+        app.run(host="0.0.0.0", port=self.port, threaded=True)
 
-if __name__ == '__main__':
-    my_log = MyLog('log\package.log')
-    my_log.rotating()
-    log = Logger('Package')
+if __name__ == '__main__':  # pragma nocover
+    init_logging(r'log\imgdownload.log')
+    logger = logging.getLogger('root')
 
     ps = PackageServer()
     ps.main()

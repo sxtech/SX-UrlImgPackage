@@ -23,12 +23,21 @@ class ImgDownloadIni:
         sysconf['port'] = self.cf.getint('SYSSET', 'port')
         return sysconf
 
+    def test(self):
+        #return self.cf.has_option('SYSSET', 'port')
+        #return self.cf.items('SYSSET')
+        try:
+            path = self.cf.get('SYSSET', 'path2')
+        except ConfigParser.Error as e:
+            print '123e'
+            print e
+
 
 if __name__ == "__main__":
 
     try:
         img = ImgDownloadIni()
-        s = img.ge_mysql_conf()
+        s = img.test()
         print s
     except ConfigParser.NoOptionError, e:
         print e

@@ -8,10 +8,9 @@ import Queue
 import json
 
 import gl
-from logbook import Logger
 from requests_func import RequestsFunc
 
-log = Logger('Package')
+logger = logging.getLogger('root')
 
 """
 
@@ -54,7 +53,7 @@ class Download:
                 self.rf.get_url_img(self.url_list[j], filename)
                 self.url_que.put(filename)
             except Exception as e:
-                log.error('%s: %s' % (e, self.url_list[j]))
+                logger.error('%s: %s' % (e, self.url_list[j]))
 
     def zip_thread(self):
         """ZIP压缩线程"""
@@ -77,7 +76,7 @@ class Download:
                 if self.is_quit:
                     break
             except Exception, e:
-                log.error(e)
+                logger.exception(e)
                 time.sleep(1)
 
     def main(self, url_list):
@@ -90,10 +89,10 @@ class Download:
             threads.append(
                 threading.Thread(target=self.get_img_thread,
                                  args=(i, self.threads_int)))
-        # 启动抓图线程
+        # 启动所有线程
         for t in threads:
             t.start()
-        # 压缩文件线程
+
         zip_t = threading.Thread(target=self.zip_thread, args=())
         zip_t.start()
         # 主线程中等待所有子线程退出
