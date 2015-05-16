@@ -31,6 +31,6 @@ class MyLog:
 if __name__ == "__main__":
     my_log = MyLog('log\package.log')
 
-    #my_log.rotating()
+    my_log.rotating()
     log = Logger('My Logger')
     log.error('This is a warning')
