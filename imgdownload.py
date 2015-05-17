@@ -21,17 +21,13 @@ logger = logging.getLogger('root')
 
 class Download:
 
-    def __init__(self, ip='127.0.0.1'):
-        # 请求IP
-        self.ip = ip
+    def __init__(self, folder):
         # HTTP函数类
         self.rf = RequestsFunc()
         # 基础路径 str
         self.basepath = gl.BASEPATH
-        # 时间戳 int
-        self.timestamp = int(time.time())
         # 文件夹名 str
-        self.folder = str(self.timestamp) + '_' + str(gl.COUNT)
+        self.folder = folder
         # 文件路径 str
         self.path = os.path.join(self.basepath, self.folder)
         # zip压缩文件名 str
@@ -57,11 +53,6 @@ class Download:
 
     def zip_thread(self):
         """ZIP压缩线程"""
-        sq = {}
-        sq['timestamp'] = self.timestamp
-        sq['ip'] = self.ip
-        sq['path'] = self.zipname
-        gl.MYQ.put(json.dumps(sq))
         # 创建文件夹
         if not os.path.isdir(self.path):
             os.makedirs(self.path)
