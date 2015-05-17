@@ -35,7 +35,8 @@ class Package(BaseModel):
 
     class Meta:
         indexes = (
-            (('banned','timeflag'),True),
+            # create a non-unique on banned/timeflag
+            (('banned','timeflag'), False),
         )
 
 if __name__ == '__main__':
@@ -55,8 +56,10 @@ if __name__ == '__main__':
 ##    #print type(query)
 ##    for i in package:
 ##        print i.id
-    q = Package.update(banned=True).where(Package.id == 1)
-    q.execute()
+##    q = Package.update(banned=True).where(Package.id == 1)
+##    q.execute()
+    Package.create(timeflag=123, ip='127.0.0.1',
+                   path='my/path')
     db.close()
     #grandma = User.get_one(User.username == '23')
     #print grandma.id
