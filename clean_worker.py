@@ -15,7 +15,7 @@ from models import Package
 logger = logging.getLogger('root')
 
 
-class PackageWorker:
+class CleanWorker:
 
     def __init__(self):
         # URL地址压缩队列 object
@@ -28,8 +28,6 @@ class PackageWorker:
     def __del__(self):
         # 系统退出设为真
         gl.IS_SYS_QUIT = True
-
-        del self.ini
 
     def clean_file(self, filename):
         """删除文件"""
@@ -62,7 +60,7 @@ class PackageWorker:
 
         self.db.close()
 
-    def clean_work(self):
+    def loop_clean(self):
         """sqlite数据库操作执行线程"""
         # 清除文件类对象
 
@@ -83,7 +81,7 @@ class PackageWorker:
                 count += 1
 
     def main(self):
-        t = threading.Thread(target=self.clean_work, args=())
+        t = threading.Thread(target=self.loop_clean, args=())
         t.start()
 
 
