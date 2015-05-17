@@ -10,7 +10,7 @@ import ConfigParser
 
 class MyIni:
 
-    def __init__(self, confpath='package.conf'):
+    def __init__(self, confpath='imgdownload.conf'):
         self.path = ''
         self.confpath = confpath
         self.cf = ConfigParser.ConfigParser()

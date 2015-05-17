@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import time
 import logging
 import logging.handlers
 
@@ -16,7 +15,7 @@ from flask_restful import Resource
 import gl
 from iniconf import MyIni
 from imgdownload import Download
-from clean_worker import CleanWorker
+from package_work import PackageWorker
 from models import User,Package
 
 def init_logging(log_file_name):
@@ -40,7 +39,7 @@ def init_logging(log_file_name):
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.6.0'
+    return 'SX-UrlImgPackage V3.5.0'
 
 # create a flask application - this ``app`` object will be used to handle
 app = Flask(__name__)
@@ -103,7 +102,7 @@ class PackageListAPIV1(Resource):
                             help='urls json array is require', location='json')
         args = parser.parse_args()
 
-        if User.get_one(User.username == request.json['key']) is None:
+        if User.get_one(User.username == username) is None:
             return {'status':401, 'message': 'Unauthorized access'}, 401
 
         gl.COUNT += 1
@@ -111,9 +110,8 @@ class PackageListAPIV1(Resource):
         folder = str(timestamp) + '_' + str(gl.COUNT)
         filepath = os.path.join(gl.BASEPATH, folder + '.zip')
 
-        p = Package.insert(timeflag=timestamp, ip=request.remote_addr,
-                           path=filepath)
-        p.execute()
+        Package.insert(timeflag=timestamp, ip=request.remote_addr,
+                       path=filepath)
 
         imgd = Download(folder)
         zipfile = imgd.main(request.json.get('urls', []))
@@ -129,18 +127,15 @@ api.add_resource(PackageListAPIV1, '/v1/package')
 if __name__ == '__main__':  # pragma nocover
     init_logging(r'log\package.log')
     logger = logging.getLogger('root')
-
-    logger.warn('System start')
+    
     ini = MyIni()
     sysini = ini.get_sys_conf()
     gl.BASEPATH = sysini['path'].replace("/", "\\")
     
-    ps = CleanWorker()
+    ps = PackageWorker()
     ps.main()
     app.run(host="0.0.0.0", port=sysini.get('port', 8017), threaded=True)
     gl.IS_SYS_QUIT = True
-
-    logger.warn('System end')
     
     del ini
     del ps
