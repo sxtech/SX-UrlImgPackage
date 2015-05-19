@@ -57,7 +57,7 @@ def flask_run_test():
 
 if __name__ == '__main__':
     #model_test()
-    #conf_test()
+    conf_test()
     #log_test()
     #requests_test()
-    flask_run_test()
+    #flask_run_test()
