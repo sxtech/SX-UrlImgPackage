@@ -21,5 +21,5 @@ class MyIni:
         conf = {}
         conf['path'] = self.cf.get('SYSSET', 'path')
         conf['port'] = self.cf.getint('SYSSET', 'port')
-        
+
         return conf

@@ -5,7 +5,6 @@ import logging
 import threading
 import zipfile
 import Queue
-import json
 
 import gl
 from requests_func import RequestsFunc
@@ -95,4 +94,3 @@ class Download:
         zip_t.join()
 
         return self.folder + '.zip'
-

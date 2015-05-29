@@ -2,6 +2,7 @@ import os
 import logging
 import logging.handlers
 
+
 def debug_logging(log_file_name):
     """Init for logging"""
     path = os.path.split(log_file_name)
@@ -19,6 +20,7 @@ def debug_logging(log_file_name):
         [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     rthandler.setFormatter(formatter)
     logger.addHandler(rthandler)
+
 
 def online_logging(log_file_name):
     """Init for logging"""
