@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-import json
 import time
 import datetime
 import shutil
 import threading
-import Queue
 import logging
 
-import gl
 from models import Package
 from app import db
 
@@ -18,16 +15,14 @@ logger = logging.getLogger('root')
 class CleanWorker:
 
     def __init__(self):
-        # URL地址压缩队列 object
-        gl.MYQ = Queue.Queue()
-        # 数据库对象
+        # 数据库对象 object
         self.db = db
-        # 15分钟间隔
-        self.delta = 15
+        # 退出标记 bool
+        self.is_quit = False
+        logger.info('CleanWorker start')
 
     def __del__(self):
-        # 系统退出设为真
-        gl.IS_SYS_QUIT = True
+        logger.info('CleanWorker exit')
 
     def clean_file(self, filename):
         """删除文件"""
@@ -43,7 +38,7 @@ class CleanWorker:
     def clean_ot_img(self):
         """删除超时图片文件"""
         _time = time.time() - \
-            datetime.timedelta(minutes=self.delta).total_seconds()
+            datetime.timedelta(minutes=15).total_seconds()
 
         self.db.connect()
 
@@ -68,7 +63,7 @@ class CleanWorker:
         count = 0
         while 1:
             # 退出检测
-            if gl.IS_SYS_QUIT:
+            if self.is_quit:
                 break
             try:
                 if count > 30:
