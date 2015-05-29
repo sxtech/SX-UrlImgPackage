@@ -1,4 +1,4 @@
-flask
-peewee
-requests
-flask-restful
+flask 0.10.1
+peewee 2.6.0
+requests 2.5.0
+Flask-RESTful 0.3.2
