@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import json
 import time
 import datetime
 import shutil
@@ -46,7 +45,7 @@ class PackageWorker:
         """删除超时图片文件"""
         _time = time.time() - \
             datetime.timedelta(minutes=self.delta).total_seconds()
-        
+
         self.db.connect()
 
         packages = (Package
@@ -85,6 +84,3 @@ class PackageWorker:
     def main(self):
         t = threading.Thread(target=self.clean_work, args=())
         t.start()
-
-
-

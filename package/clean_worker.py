@@ -10,7 +10,7 @@ import logging
 
 import gl
 from models import Package
-
+from app import db
 
 logger = logging.getLogger('root')
 
@@ -21,7 +21,7 @@ class CleanWorker:
         # URL地址压缩队列 object
         gl.MYQ = Queue.Queue()
         # 数据库对象
-        self.db = gl.DB
+        self.db = db
         # 15分钟间隔
         self.delta = 15
 
@@ -44,7 +44,7 @@ class CleanWorker:
         """删除超时图片文件"""
         _time = time.time() - \
             datetime.timedelta(minutes=self.delta).total_seconds()
-        
+
         self.db.connect()
 
         packages = (Package
@@ -83,6 +83,3 @@ class CleanWorker:
     def main(self):
         t = threading.Thread(target=self.loop_clean, args=())
         t.start()
-
-
-

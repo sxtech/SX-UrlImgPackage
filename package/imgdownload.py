@@ -96,5 +96,3 @@ class Download:
 
         return self.folder + '.zip'
 
-if __name__ == "__main__":
-    print '123'

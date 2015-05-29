@@ -1,14 +1,13 @@
-##from url_img_package.models import User,Package
-##from url_img_package import MyIni
-##from peewee import *
-##from url_img_package import gl
-##from url_img_package import online_logging
-##import logging
-##import json
-from requests_func import RequestsFunc
-##from url_img_package import app
-##from url_img_package import CleanWorker
-##
+from url_img_package.models import User,Package
+from url_img_package import MyIni
+from peewee import *
+from url_img_package import gl
+from url_img_package import online_logging
+import logging
+import json
+from url_img_package import RequestsFunc
+from url_img_package import app
+
 def model_test():
     db = gl.DB
     db.connect()
@@ -46,9 +45,9 @@ def flask_run_test():
     sysini = ini.get_sys_conf()
     gl.BASEPATH = sysini['path'].replace("/", "\\")
     
-    ps = CleanWorker()
-    ps.main()
-    app.run(host="0.0.0.0", port=sysini.get('port', 8017), threaded=True,debug=True)
+    #ps = CleanWorker()
+    #ps.main()
+    app.run(host="0.0.0.0", port=sysini.get('port', 8017), threaded=True)
     gl.IS_SYS_QUIT = True
 
     #logger.warn('System end')
@@ -58,7 +57,7 @@ def flask_run_test():
 
 if __name__ == '__main__':
     #model_test()
-    #conf_test()
+    conf_test()
     #log_test()
-    requests_test()
+    #requests_test()
     #flask_run_test()

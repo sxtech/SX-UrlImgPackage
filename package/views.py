@@ -3,63 +3,25 @@
 import os
 import time
 import logging
-import logging.handlers
 
-from flask import g
-from flask import Flask
-from flask import request
-from flask_restful import reqparse
-from flask_restful import abort
-from flask_restful import Api
-from flask_restful import Resource
+from flask import g, Flask, request
+from flask_restful import reqparse, abort, Api, Resource
 
+from app import app, db, api
+from models import User, Package
 import gl
-from iniconf import MyIni
 from imgdownload import Download
 from clean_worker import CleanWorker
-from models import User,Package
-
-def init_logging(log_file_name):
-    """Init for logging"""
-    path = os.path.split(log_file_name)
-    if os.path.isdir(path[0]):
-        pass
-    else:
-        os.makedirs(path[0])
-    logger = logging.getLogger('root')
-
-    rthandler = logging.handlers.RotatingFileHandler(
-        log_file_name, maxBytes=20 * 1024 * 1024, backupCount=5)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        '%(asctime)s %(filename)s[line:%(lineno)d] \
-        [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    rthandler.setFormatter(formatter)
-    logger.addHandler(rthandler)
+from models import User, Package
 
 
-def version():
-    """版本号"""
-    return 'SX-UrlImgPackage V3.6.0'
-
-# create a flask application - this ``app`` object will be used to handle
-app = Flask(__name__)
-api = Api(app)
-
-# simple utility function to create tables
-def create_tables():
-    gl.DB.connect()
-    try:
-        gl.DB.create_tables([User,Package])
-    except:
-        pass
-
+logger = logging.getLogger('root')
 
 # Request handlers -- these two hooks are provided by flask and we will use them
 # to create and tear down a database connection on each request.
 @app.before_request
 def before_request():
-    g.db = gl.DB
+    g.db = db
     g.db.connect()
 
 @app.after_request
@@ -67,6 +29,9 @@ def after_request(response):
     g.db.close()
     return response
 
+def version():
+    """版本号"""
+    return 'SX-UrlImgPackage V3.6.0'
 
 class Index(Resource):
 
@@ -99,7 +64,7 @@ class PackageListAPIV1(Resource):
 
         parser.add_argument('key', type=unicode, required=True,
                             help='A key value is require', location='json')
-        parser.add_argument('urls', type=list,required=True,
+        parser.add_argument('urls', type=list, required=True,
                             help='urls json array is require', location='json')
         args = parser.parse_args()
 
@@ -125,24 +90,5 @@ api.add_resource(Index, '/')
 api.add_resource(TodoList, '/package')
 api.add_resource(PackageListAPIV1, '/v1/package')
 
-
-if __name__ == '__main__':  # pragma nocover
-    init_logging(r'log\package.log')
-    logger = logging.getLogger('root')
-
-    logger.warn('System start')
-    ini = MyIni()
-    sysini = ini.get_sys_conf()
-    gl.BASEPATH = sysini['path'].replace("/", "\\")
-    
-    ps = CleanWorker()
-    ps.main()
-    app.run(host="0.0.0.0", port=sysini.get('port', 8017), threaded=True)
-    gl.IS_SYS_QUIT = True
-
-    logger.warn('System end')
-    
-    del ini
-    del ps
 
 

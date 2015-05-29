@@ -23,13 +23,3 @@ class MyIni:
         conf['port'] = self.cf.getint('SYSSET', 'port')
         
         return conf
-
-
-if __name__ == "__main__":
-
-    try:
-        img = ImgDownloadIni()
-        s = img.test()
-        print s
-    except ConfigParser.NoOptionError, e:
-        print e
