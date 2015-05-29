@@ -23,14 +23,3 @@ class RequestsFunc:
 
         return r
 
-if __name__ == '__main__':
-    import json
-    rf = RequestsFunc()
-    url = 'http://127.0.0.1:8017/v1/package'
-    #data = {'key': 'sx2767722', 'id': 1}
-    urls = ['http://localhost/imgareaselect/imgs/1.jpg','http://localhost/imgareaselect/imgs/2.jpg']
-    data = {'key':'sx2767722','urls': urls}
-    r = rf.send_post(url, json.dumps(data))
-    print r.status_code
-    print r.text
-    #print rf.send_post(url, data)

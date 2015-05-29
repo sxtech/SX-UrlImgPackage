@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-# mysql线程池
-MYSQLPOOL = None
-# 服务侦听端口
-LISTEN_PORT = 21231
-# 设置字符集（和PHP交互的字符集）
-CHARSET = "gbk"
-# 锁
+DB = None
+# 线程锁
 MYLOCK = None
 # 计数
 COUNT = 0
