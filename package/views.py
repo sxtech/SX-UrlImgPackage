@@ -33,7 +33,7 @@ def after_request(response):
 
 def version():
     """版本号"""
-    return 'SX-UrlImgPackage V3.7.0'
+    return 'SX-UrlImgPackage V3.6.0'
 
 
 class Index(Resource):
