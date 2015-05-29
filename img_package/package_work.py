@@ -4,12 +4,10 @@ import time
 import datetime
 import shutil
 import threading
-import Queue
 import logging
 
-import gl
 from models import Package
-
+from app import db
 
 logger = logging.getLogger('root')
 
@@ -17,18 +15,16 @@ logger = logging.getLogger('root')
 class PackageWorker:
 
     def __init__(self):
-        # URL地址压缩队列 object
-        gl.MYQ = Queue.Queue()
         # 数据库对象
-        self.db = gl.DB
+        self.db = db
         # 15分钟间隔
         self.delta = 15
+        # 退出标记 bool
+        self.is_quit = False
+        logger.info('PackageWorker start')
 
     def __del__(self):
-        # 系统退出设为真
-        gl.IS_SYS_QUIT = True
-
-        del self.ini
+        logger.info('PackageWorker exit')
 
     def clean_file(self, filename):
         """删除文件"""
@@ -69,7 +65,7 @@ class PackageWorker:
         count = 0
         while 1:
             # 退出检测
-            if gl.IS_SYS_QUIT:
+            if self.is_quit:
                 break
             try:
                 if count > 30:

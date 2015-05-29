@@ -6,25 +6,24 @@ import threading
 import zipfile
 import Queue
 
-import gl
 from requests_func import RequestsFunc
 
 logger = logging.getLogger('root')
 
 """
 
-多线程抓图并压缩
+多线程抓图队列压缩
 
 """
 
 
 class Download:
 
-    def __init__(self, folder):
+    def __init__(self, basepath, folder):
         # HTTP函数类
         self.rf = RequestsFunc()
         # 基础路径 str
-        self.basepath = gl.BASEPATH
+        self.basepath = basepath
         # 文件夹名 str
         self.folder = folder
         # 文件路径 str

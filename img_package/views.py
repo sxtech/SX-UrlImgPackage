@@ -76,14 +76,14 @@ class PackageListAPIV1(Resource):
 
         gl.COUNT += 1
         timestamp = int(time.time())
-        folder = str(timestamp) + '_' + str(gl.COUNT)
-        filepath = os.path.join(gl.BASEPATH, folder + '.zip')
+        folder = '%s_%s' % (str(timestamp), str(gl.COUNT))
+        filepath = os.path.join(app.config['BASEPATH'], folder + '.zip')
 
         p = Package.insert(timeflag=timestamp, ip=request.remote_addr,
                            path=filepath)
         p.execute()
 
-        imgd = Download(folder)
+        imgd = Download(app.config['BASEPATH'], folder)
         zipfile = imgd.main(request.json.get('urls', []))
         del imgd
 
