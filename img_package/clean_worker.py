@@ -22,7 +22,7 @@ class CleanWorker:
         logger.info('CleanWorker start')
 
     def __del__(self):
-        logger.info('CleanWorker exit')
+        logger.info('CleanWorker quit')
 
     def clean_file(self, filename):
         """删除文件"""
