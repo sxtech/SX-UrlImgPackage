@@ -64,7 +64,7 @@ class Download:
             except Queue.Empty:
                 if self.is_quit:
                     break
-            except Exception, e:
+            except Exception as e:
                 logger.exception(e)
                 time.sleep(1)
 
