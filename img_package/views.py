@@ -31,15 +31,11 @@ def after_request(response):
     return response
 
 
-def version():
-    """版本号"""
-    return 'SX-UrlImgPackage V3.6.0'
-
-
 class Index(Resource):
 
     def get(self):
-        return {'message': "Welcome to use %s" % version()}
+        return {'package_url': 'http://localhost/package',
+                'package_url': 'http://localhost/v1/package'}
 
 
 class TodoList(Resource):
