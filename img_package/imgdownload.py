@@ -5,10 +5,12 @@ import logging
 import threading
 import zipfile
 import Queue
+import random
 
-from requests_func import RequestsFunc
+from app import app, logger
+from models import Package
+from requests_func import get_url_img
 
-logger = logging.getLogger('root')
 
 """
 
@@ -19,13 +21,13 @@ logger = logging.getLogger('root')
 
 class Download:
 
-    def __init__(self, basepath, folder):
-        # HTTP函数类
-        self.rf = RequestsFunc()
+    def __init__(self, addr):
         # 基础路径 str
-        self.basepath = basepath
-        # 文件夹名 str
-        self.folder = folder
+        self.basepath = app.config['BASEPATH']
+        # 用户IP地址 str
+        self.addr = addr
+        # 文件夹名,随机产生32位16进制数字 str
+        self.folder = "%032x" % random.getrandbits(128)
         # 文件路径 str
         self.path = os.path.join(self.basepath, self.folder)
         # zip压缩文件名 str
@@ -44,7 +46,7 @@ class Download:
         for j in range(m, len(self.url_list), i):
             try:
                 filename = os.path.join(self.path, '%s.jpg' % str(j))
-                self.rf.get_url_img(self.url_list[j], filename)
+                get_url_img(self.url_list[j], filename)
                 self.url_que.put(filename)
             except Exception as e:
                 logger.error('%s: %s' % (e, self.url_list[j]))
@@ -70,7 +72,7 @@ class Download:
 
     def main(self, url_list):
         """主函数"""
-        # 存放线程对象list
+        # 存放线程对象 list
         threads = []
         # 先创建线程对象
         self.url_list = url_list
@@ -89,7 +91,10 @@ class Download:
             t.join()
         # 退出标记设为真
         self.is_quit = True
-
         zip_t.join()
+
+        p = Package.insert(timeflag=int(time.time()), ip=self.addr,
+                           path=self.zipname)
+        p.execute()
 
         return self.folder + '.zip'
