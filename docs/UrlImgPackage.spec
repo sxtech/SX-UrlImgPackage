@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-a = Analysis(['C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\app.py'],
+a = Analysis(['C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\run.py'],
              pathex=['C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\UrlImgPackage'],
              hiddenimports=["flask",
 					 "flask_restful",
@@ -23,4 +23,4 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=True , version='C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\file_version_info.txt', icon='C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\logo.ico')
+          console=True , version='C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\docs\\file_version_info.txt', icon='C:\\Users\\wen\\Documents\\GitHub\\SX-UrlImgPackage\\icons\\logo.ico')
