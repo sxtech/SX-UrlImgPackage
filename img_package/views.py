@@ -6,19 +6,13 @@ import logging
 
 from flask import g, request
 from flask_restful import reqparse, abort, Resource
+from passlib.hash import sha256_crypt
 
-from app import app, db, api
-from models import User, Package
-import gl
+from app import app, db, api, auth, logger
+from models import User, Users
 from imgdownload import Download
-from models import User, Package
 
 
-logger = logging.getLogger('root')
-
-
-# Request handlers -- these two hooks are provided by flask and we will use
-# them to create and tear down a database connection on each request.
 @app.before_request
 def before_request():
     g.db = db
@@ -31,11 +25,20 @@ def after_request(response):
     return response
 
 
+@auth.verify_password
+def verify_password(username, password):
+    user = Users.get_one(Users.username == username,
+                         Users.banned == False)
+    if not user:
+        return False
+    return sha256_crypt.verify(password, user.password)
+
+
 class Index(Resource):
 
     def get(self):
         return {'package_url': 'http://localhost/package',
-                'package_url': 'http://localhost/v1/package'}
+                'package_v1_url': 'http://localhost/v1/package'}
 
 
 class TodoList(Resource):
@@ -48,7 +51,6 @@ class TodoList(Resource):
         if 'urls' not in request.json:
             return {'package': None, 'msg': 'No "urls" key', 'code': 106}, 400
 
-        gl.COUNT += 1
         imgd = Download(request.remote_addr)
         zipfile = imgd.main(request.json.get('urls', []))
         del imgd
@@ -58,28 +60,14 @@ class TodoList(Resource):
 
 class PackageListAPIV1(Resource):
 
+    @auth.login_required
     def post(self):
         parser = reqparse.RequestParser()
-
-        parser.add_argument('key', type=unicode, required=True,
-                            help='A key value is require', location='json')
         parser.add_argument('urls', type=list, required=True,
                             help='urls json array is require', location='json')
         args = parser.parse_args()
 
-        if User.get_one(User.username == request.json['key']) is None:
-            return {'status': 401, 'message': 'Unauthorized access'}, 401
-
-        gl.COUNT += 1
-        timestamp = int(time.time())
-        folder = '%s_%s' % (str(timestamp), str(gl.COUNT))
-        filepath = os.path.join(app.config['BASEPATH'], folder + '.zip')
-
-        p = Package.insert(timeflag=timestamp, ip=request.remote_addr,
-                           path=filepath)
-        p.execute()
-
-        imgd = Download(app.config['BASEPATH'], folder)
+        imgd = Download(request.remote_addr)
         zipfile = imgd.main(request.json.get('urls', []))
         del imgd
 

@@ -25,6 +25,12 @@ class User(BaseModel):
     banned = BooleanField(default=False)
 
 
+class Users(BaseModel):
+    username = TextField(unique=True)
+    password = TextField()
+    banned = BooleanField(default=False)
+
+
 class Package(BaseModel):
     timeflag = IntegerField(default=int(time.time()))
     ip = TextField()

@@ -11,8 +11,6 @@ import ConfigParser
 class MyIni:
 
     def __init__(self, confpath='package.conf'):
-        self.path = ''
-        self.confpath = confpath
         self.cf = ConfigParser.ConfigParser()
         self.cf.read(confpath)
 

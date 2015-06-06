@@ -7,16 +7,12 @@ import threading
 import logging
 
 from models import Package
-from app import db
-
-logger = logging.getLogger('root')
+from app import db, logger
 
 
 class CleanWorker:
 
     def __init__(self):
-        # 数据库对象 object
-        self.db = db
         # 退出标记 bool
         self.is_quit = False
         logger.info('CleanWorker start')
@@ -40,25 +36,20 @@ class CleanWorker:
         _time = time.time() - \
             datetime.timedelta(minutes=15).total_seconds()
 
-        self.db.connect()
-
+        db.connect()
         packages = (Package
                     .select()
                     .where((Package.banned == 0) & (Package.timeflag < int(_time))))
-
         for i in packages:
             if i.path is not None and i.path != '':
                 self.clean_file(i.path)
                 logger.warning('Cleaned %s' % i.path)
             q = Package.update(banned=True).where(Package.id == i.id)
             q.execute()  # Execute the query, updating the database.
-
-        self.db.close()
+        db.close()
 
     def loop_clean(self):
         """sqlite数据库操作执行线程"""
-        # 清除文件类对象
-
         # 清理计数
         count = 0
         while 1:
