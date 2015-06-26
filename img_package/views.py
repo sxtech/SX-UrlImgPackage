@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import time
-import logging
-
 from flask import g, request
 from flask_restful import reqparse, abort, Resource
 from passlib.hash import sha256_crypt
@@ -62,16 +58,22 @@ class PackageListAPIV1(Resource):
 
     @auth.login_required
     def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('urls', type=list, required=True,
-                            help='urls json array is require', location='json')
-        args = parser.parse_args()
+        if not request.json:
+            return {'message': 'Problems parsing JSON'}, 400
+        if 'urls' not in request.json.keys():
+            return {'message': 'Validation Failed',
+                    'errors': [{'resource:': 'Package', 'field': 'urls',
+                                'code': 'missing_field'}]}, 422
+        if not isinstance(request.json['urls'], list):
+            return {'message': 'Validation Failed',
+                    'errors': [{'resource:': 'Package', 'field': 'urls',
+                                'code': 'invalid'}]}, 422
 
         imgd = Download(request.remote_addr)
-        zipfile = imgd.main(request.json.get('urls', []))
+        zipfile = imgd.main(request.json['urls'])
         del imgd
 
-        return {'status': 201, 'message': 'Created', 'package': zipfile}, 201
+        return {'package': zipfile}, 201
 
 api.add_resource(Index, '/')
 api.add_resource(TodoList, '/package')
