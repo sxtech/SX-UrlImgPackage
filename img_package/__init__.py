@@ -43,11 +43,10 @@ from . import views
 @app.after_request
 def after_request(response):
     """访问信息写入日志"""
-    access_logger.info('%s - - [%s] "%s %s HTTP/1.1" %s %s'
-                       % (request.remote_addr,
-                          arrow.now().format('DD/MMM/YYYY:HH:mm:ss ZZ'),
-                          request.method, request.path, response.status_code,
-                          response.content_length))
+    access_logger.info('{0} - - [{1}] "{2} {3} HTTP/1.1" {4} {5}'.format(
+        request.remote_addr, arrow.now().format('DD/MMM/YYYY:HH:mm:ss ZZ'),
+        request.method, request.path, response.status_code,
+        response.content_length))
     response.headers['Server'] = app.config['HEADER_SERVER']
     response.headers['Content-Type'] = 'application/json; charset=utf-8'
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -101,5 +100,4 @@ def internal_server_error(error):
         'Access-Control-Allow-Methods': 'GET, POST',
         'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
     }
-
     return jsonify({'message': 'Internal Server Error'}), 500, headers
