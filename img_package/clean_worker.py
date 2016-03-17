@@ -35,10 +35,9 @@ class CleanWorker:
 
         packages = Package.query.filter(Package.expired < t, Package.banned==0).all()
         for i in packages:
-            print i
             if i.path is not None and i.path != '':
                 self.clean_file(i.path)
-                logger.warning('Cleaned %s' % i.path)
+                logger.warning('%s has been removed!' % i.path)
             db.session.query(Package).filter(Package.id==i.id).update({'banned' : 1})
             db.session.commit()
 
