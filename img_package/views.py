@@ -77,10 +77,10 @@ class Index(Resource):
 
     def get(self):
         return {
-            'user_url': 'http://%s:%s/user{/user_id}' % (request.remote_addr, app.config['PORT']),
-            'scope_url': 'http://%s:%s/scope' % (request.remote_addr, app.config['PORT']),
-            'token_url': 'http://%s:%s/token' % (request.remote_addr, app.config['PORT']),
-            'package_url': 'http://%s:%s/package' % (request.remote_addr, app.config['PORT'])
+            'user_url': 'http://%suser{/user_id}' % (request.url_root),
+            'scope_url': 'http://%sscope' % (request.url_root),
+            'token_url': 'http://%stoken' % (request.url_root),
+            'package_url': 'http://%spackage' % (request.url_root)
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
 
