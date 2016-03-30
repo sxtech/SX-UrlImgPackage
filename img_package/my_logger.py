@@ -6,10 +6,9 @@ import logging.handlers
 def debug_logging(log_file_name):
     """Init for logging"""
     path = os.path.split(log_file_name)
-    if os.path.isdir(path[0]):
-        pass
-    else:
+    if not os.path.isdir(path[0]):
         os.makedirs(path[0])
+
     logger = logging.getLogger('root')
 
     rthandler = logging.handlers.RotatingFileHandler(
@@ -25,10 +24,9 @@ def debug_logging(log_file_name):
 def online_logging(log_file_name):
     """Init for logging"""
     path = os.path.split(log_file_name)
-    if os.path.isdir(path[0]):
-        pass
-    else:
+    if not os.path.isdir(path[0]):
         os.makedirs(path[0])
+
     logger = logging.getLogger('root')
 
     rthandler = logging.handlers.RotatingFileHandler(
