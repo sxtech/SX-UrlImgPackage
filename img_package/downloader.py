@@ -1,7 +1,7 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
+import uuid
 import zipfile
-import random
 import multiprocessing
 
 import requests
@@ -21,15 +21,16 @@ class Downloader(multiprocessing.Process):
     def __init__(self, conn, basepath, url_list):
 	multiprocessing.Process.__init__(self)
         # 基础路径 str
-        self.basepath = basepath #app.config['BASEPATH']
-        # 文件夹名,随机产生32位16进制数字 str
-        self.folder = "%032x" % random.getrandbits(128)
+        self.basepath = basepath
+        # 文件夹名, uuid1 str
+        self.folder = uuid.uuid1().hex
         # 文件路径 str
         self.path = os.path.join(self.basepath, self.folder)
         # zip压缩文件名 str
         self.zipname = os.path.join(self.basepath, self.folder + '.zip')
+        # multiprocessing child管道
 	self.conn = conn
-	# url地址列表
+	# url地址列表 list
 	self.url_list = url_list
 
         # 创建文件夹
@@ -37,7 +38,7 @@ class Downloader(multiprocessing.Process):
             os.makedirs(self.path)
 
     def fetch_imgs(self, url_list):
-        """gevent抓取图像"""
+        """requests长连接抓取图像"""
 	s = requests.Session()
 	count = 1
 	for url in url_list:
