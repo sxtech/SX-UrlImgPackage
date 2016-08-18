@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import shutil
 
-import requests
+#import requests
 
 
-def get_url_img(url, path):
+def get_url_img(url, path, s):
     """根据URL地址抓图到本地文件"""
-    r = requests.get(url, stream=True)
+    r = s.get(url, stream=True)
 
     if r.status_code == 200:
         with open(path, 'wb') as f:
