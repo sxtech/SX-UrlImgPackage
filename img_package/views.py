@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import json
 import multiprocessing
 from functools import wraps
@@ -253,19 +253,19 @@ class PackageList(Resource):
                                 'code': 'invalid'}]}, 422
         try:
 	    parent_conn, child_conn = multiprocessing.Pipe()
-            d = Downloader(child_conn, app.config['BASEPATH'], request.json['urls'])
+            d = Downloader(child_conn, app.config['BASEPATH'],
+                           request.json['urls'])
 	    d.start()
-	    d_dict = parent_conn.recv()
+	    r = parent_conn.recv()
 	    d.join()
-            #d_dict = d.main(request.json['urls'])
-            package = Package(
-                ip=request.remote_addr, path=d_dict['zipname'],
-                date_created=arrow.now().datetime)
-            db.session.add(package)
+            p = Package(ip=request.remote_addr, path=r['zipname'],
+                        date_created=arrow.now().datetime)
+            db.session.add(p)
             db.session.commit()
         except Exception as e:
             logger.error(e)
-        return {'package': 'http://{0}/{1}'.format(app.config['SERVER_ADDR'], d_dict['name'])}, 201
+        return {'package': 'http://{0}/{1}'.format(
+            app.config['SERVER_ADDR'], r['name'])}, 201
 
 
 api.add_resource(Index, '/')

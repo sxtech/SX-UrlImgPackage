@@ -33,7 +33,8 @@ class CleanWorker:
         """删除超时图片文件"""
         t = arrow.now().timestamp
 
-        packages = Package.query.filter(Package.expired < t, Package.banned==0).all()
+        packages = Package.query.filter(
+            Package.expired < t, Package.banned==0).all()
         for i in packages:
             if i.path is not None and i.path != '':
                 self.clean_file(i.path)
