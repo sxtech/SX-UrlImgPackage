@@ -27,20 +27,14 @@ def show_path():
 
 def test_downloader():
     url_list = [
-        'http://localhost/imgareaselect/imgs/1.jpg',
-        'http://localhost/imgareaselect/imgs/2.jpg',
-        'http://localhost/imgareaselect/imgs/1.jpg'
+        'http://10.44.192.70/SpreadDataH/ImageFile/2016/08/17/21/441305000004/21570700041.jpg',
+        'http://10.44.192.70/SpreadDataH/ImageFile/2016/08/17/21/441305000005/21565900040.jpg',
+        'http://10.44.192.67:8088/05/vhipict/201608/17/21/100000002005-20160817215652-4-1.jpg',
+	'http://10.44.192.67:8088/02/vhipict/201608/17/21/100000001902-20160817215653-5-1.jpg'
     ]
     dl = Downloader()
     dl.main(url_list)
     del dl
 
 if __name__ == "__main__":
-##    url_list = [
-##        'http://localhost/imgareaselect/imgs/1.jpg',
-##        'http://localhost/imgareaselect/imgs/2.jpg',
-##        'http://localhost/imgareaselect/imgs/1.jpg'
-##    ]
-##    fetch_imgs(url_list)
-    #show_path()
     test_downloader()

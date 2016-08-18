@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import os
 
 
@@ -22,7 +22,9 @@ class Config(object):
     # 白名单列表 set
     WHITE_LIST = set(['127.0.0.1'])
     # 文件路径
-    BASEPATH = 'imgpackage'
+    BASEPATH = '/home/imgpackage'
+    # nginx静态文件服务IP
+    SERVER_ADDR = '10.47.223.147:8098'
     # 退出标记
     IS_QUIT = False
 
