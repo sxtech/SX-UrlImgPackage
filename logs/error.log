@@ -1,0 +1,28 @@
+2015-09-14 02:29:27 views.py[line:306]         [ERROR] global name 'json' is not defined
+2015-09-14 02:30:25 views.py[line:308]         [ERROR] <Arrow [2015-09-14T02:30:25.584000+08:00]> is not JSON serializable
+2015-09-14 02:31:37 views.py[line:308]         [ERROR] __init__() got an unexpected keyword argument 'info'
+2015-09-14 02:34:07 views.py[line:307]         [ERROR] global name 'timeflag' is not defined
+2016-03-17 21:12:05 clean_worker.py[line:18]         [INFO] CleanWorker start
+2016-03-17 21:12:31 clean_worker.py[line:21]         [INFO] CleanWorker quit
+2016-03-17 21:12:32 clean_worker.py[line:18]         [INFO] CleanWorker start
+2016-03-17 21:12:32 clean_worker.py[line:28]         [ERROR] [Error 3] : u'c:\\test\\test.zip'
+2016-03-17 21:12:32 clean_worker.py[line:32]         [ERROR] [Error 3] : u'c:\\test\\test\\*.*'
+2016-03-17 21:12:32 clean_worker.py[line:43]         [WARNING] Cleaned c:\test\test.zip
+2016-03-17 21:35:36 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:37:35 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:38:36 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:40:26 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:40:35 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:40:57 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:41:04 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:41:11 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:41:12 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:42:00 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:42:08 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:43:29 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:43:38 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:44:25 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:44:31 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:45:49 clean_worker.py[line:19]         [INFO] CleanWorker quit
+2016-03-17 21:46:52 clean_worker.py[line:16]         [INFO] CleanWorker start
+2016-03-17 21:47:59 clean_worker.py[line:19]         [INFO] CleanWorker quit
